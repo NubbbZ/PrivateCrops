@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Oxide.Core;
-using Oxide.Core.Libraries.Covalence;
+﻿using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-	[Info("Private Crops", "NubbbZ", "1.0.0")]
+	[Info("Private Crops", "NubbbZ", "1.0.1")]
 	[Description("Protects player's crops from being stolen!")]
 	class PrivateCrops : CovalencePlugin
 	{
+		private const string messagebypass = "privatecrops.message.bypass";
+		private const string protectionbypass = "privatecrops.protection.bypass";
+
 		private void Init()
 		{
-			permission.RegisterPermission("privatecrops.message.bypass", this);
-			permission.RegisterPermission("privatecrops.protection.bypass", this);
+			permission.RegisterPermission(messagebypass, this);
+			permission.RegisterPermission(protectionbypass, this);
 		}
 
 		protected override void LoadDefaultMessages()
@@ -28,7 +27,7 @@ namespace Oxide.Plugins
 		{
 			if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
 			{
-				if (plant.OwnerID.ToString() != player.IPlayer.Id)
+				if (plant.OwnerID != player.userID)
 				{
 					if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
 					{
@@ -43,7 +42,7 @@ namespace Oxide.Plugins
 		{
 			if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
 			{
-				if (plant.OwnerID.ToString() != player.IPlayer.Id)
+				if (plant.OwnerID != player.userID)
 				{
 					if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
 					{

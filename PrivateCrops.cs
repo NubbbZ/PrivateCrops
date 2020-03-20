@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-	[Info("Private Crops", "NubbbZ", "1.0.1")]
+	[Info("Private Crops", "NubbbZ", "1.1.0")]
 	[Description("Protects player's crops from being stolen!")]
 	class PrivateCrops : CovalencePlugin
 	{
+		#region Variables
 		private const string messagebypass = "privatecrops.message.bypass";
 		private const string protectionbypass = "privatecrops.protection.bypass";
+		#endregion
 
+		#region Setup
 		private void Init()
 		{
 			permission.RegisterPermission(messagebypass, this);
@@ -23,35 +27,101 @@ namespace Oxide.Plugins
 			}, this);
 		}
 
+		protected override void LoadDefaultConfig()
+		{
+			LogWarning("Creating a new configuration file");
+			Config["ToolCupboardArea"] = true;
+		}
+		#endregion
+
+		#region Hooks
 		private object OnCropGather(PlantEntity plant, Item item, BasePlayer player)
 		{
-			if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
+			try
 			{
-				if (plant.OwnerID != player.userID)
+				protection(player, plant);
+			}
+			catch (Exception ex)
+			{
+				if (ex.Message == "null")
 				{
-					if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
-					{
-						player.IPlayer.Message(lang.GetMessage("message", this, player.IPlayer.Id));
-					}
-					return true;
+					return null;
+				}
+				else
+				{
+					return Convert.ToBoolean(ex.Message);
 				}
 			}
 			return null;
 		}
 		private object CanTakeCutting(BasePlayer player, PlantEntity plant)
 		{
-			if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
+			try
 			{
-				if (plant.OwnerID != player.userID)
+				protection(player, plant);
+			}
+			catch (Exception ex)
+			{
+				if (ex.Message == "null")
 				{
-					if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
-					{
-						player.IPlayer.Message(lang.GetMessage("message", this, player.IPlayer.Id));
-					}
-					return true;
+					return null;
+				}
+				else
+				{
+					return Convert.ToBoolean(ex.Message);
 				}
 			}
 			return null;
 		}
+		#endregion
+
+		#region Helpers
+		public void protection(BasePlayer player, PlantEntity plant)
+		{
+			BuildingPrivlidge TC = player.GetBuildingPrivilege();
+
+			if ((bool)Config["ToolCupboardArea"] == true)
+			{
+				if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
+				{
+					if (TC == null)
+					{
+						throw new Exception("null");
+					}
+					else
+					{
+						if (TC.IsAuthed(player) == true)
+						{
+							throw new Exception("null");
+						}
+						else
+						{
+							warning(player);
+							throw new Exception("true");
+						}
+					}
+				}
+			}
+			else
+			{
+				if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
+				{
+					if (plant.OwnerID != player.userID)
+					{
+						warning(player);
+						throw new Exception("true");
+					}
+				}
+			}
+		}
+
+		public void warning(BasePlayer player)
+		{
+			if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
+			{
+				player.IPlayer.Message(lang.GetMessage("message", this, player.IPlayer.Id));
+			}
+		}
+		#endregion
 	}
 }

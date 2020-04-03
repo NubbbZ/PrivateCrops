@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-	[Info("Private Crops", "NubbbZ", "1.1.0")]
+	[Info("Private Crops", "NubbbZ", "1.1.1")]
 	[Description("Protects player's crops from being stolen!")]
 	class PrivateCrops : CovalencePlugin
 	{
@@ -35,7 +35,7 @@ namespace Oxide.Plugins
 		#endregion
 
 		#region Hooks
-		private object OnCropGather(PlantEntity plant, Item item, BasePlayer player)
+		private object OnCropGather(GrowableEntity plant, Item item, BasePlayer player)
 		{
 			try
 			{
@@ -54,7 +54,7 @@ namespace Oxide.Plugins
 			}
 			return null;
 		}
-		private object CanTakeCutting(BasePlayer player, PlantEntity plant)
+		private object CanTakeCutting(BasePlayer player, GrowableEntity plant)
 		{
 			try
 			{
@@ -76,7 +76,7 @@ namespace Oxide.Plugins
 		#endregion
 
 		#region Helpers
-		public void protection(BasePlayer player, PlantEntity plant)
+		public void protection(BasePlayer player, GrowableEntity plant)
 		{
 			BuildingPrivlidge TC = player.GetBuildingPrivilege();
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-	[Info("Private Crops", "NubbbZ", "1.1.1")]
+	[Info("Private Crops", "NubbbZ", "1.1.2")]
 	[Description("Protects player's crops from being stolen!")]
 	class PrivateCrops : CovalencePlugin
 	{
@@ -35,89 +35,45 @@ namespace Oxide.Plugins
 		#endregion
 
 		#region Hooks
-		private object OnCropGather(GrowableEntity plant, Item item, BasePlayer player)
+		private object CanTakeCutting(BasePlayer player, GrowableEntity growable)
 		{
-			try
-			{
-				protection(player, plant);
-			}
-			catch (Exception ex)
-			{
-				if (ex.Message == "null")
-				{
-					return null;
-				}
-				else
-				{
-					return Convert.ToBoolean(ex.Message);
-				}
-			}
-			return null;
+			return CropsProtected(player, growable);
 		}
-		private object CanTakeCutting(BasePlayer player, GrowableEntity plant)
+
+		private object OnGrowableGather(GrowableEntity growable, Item item, BasePlayer player)
 		{
-			try
-			{
-				protection(player, plant);
-			}
-			catch (Exception ex)
-			{
-				if (ex.Message == "null")
-				{
-					return null;
-				}
-				else
-				{
-					return Convert.ToBoolean(ex.Message);
-				}
-			}
-			return null;
+			return CropsProtected(player, growable);
 		}
 		#endregion
 
 		#region Helpers
-		public void protection(BasePlayer player, GrowableEntity plant)
+		public object CropsProtected(BasePlayer player, GrowableEntity growable)
 		{
-			BuildingPrivlidge TC = player.GetBuildingPrivilege();
+			if (player.IPlayer.HasPermission(protectionbypass) == true)
+			{
+				return null;
+			}
 
 			if ((bool)Config["ToolCupboardArea"] == true)
 			{
-				if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
+				BuildingPrivlidge TC = player.GetBuildingPrivilege();
+				if (TC?.IsAuthed(player) == false)
 				{
-					if (TC == null)
-					{
-						throw new Exception("null");
-					}
-					else
-					{
-						if (TC.IsAuthed(player) == true)
-						{
-							throw new Exception("null");
-						}
-						else
-						{
-							warning(player);
-							throw new Exception("true");
-						}
-					}
+					WarnPlayer(player);
+					return true;
 				}
 			}
-			else
+			else if (growable.OwnerID != player.userID)
 			{
-				if (player.IPlayer.HasPermission("privatecrops.protection.bypass") == false)
-				{
-					if (plant.OwnerID != player.userID)
-					{
-						warning(player);
-						throw new Exception("true");
-					}
-				}
+				WarnPlayer(player);
 			}
+
+			return null;
 		}
 
-		public void warning(BasePlayer player)
+		public void WarnPlayer(BasePlayer player)
 		{
-			if (player.IPlayer.HasPermission("privatecrops.message.bypass") == false)
+			if (player.IPlayer.HasPermission(messagebypass) == false)
 			{
 				player.IPlayer.Message(lang.GetMessage("message", this, player.IPlayer.Id));
 			}

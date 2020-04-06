@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-	[Info("Private Crops", "NubbbZ", "1.1.2")]
+	[Info("Private Crops", "NubbbZ", "1.1.3")]
 	[Description("Protects player's crops from being stolen!")]
 	class PrivateCrops : CovalencePlugin
 	{
@@ -23,7 +23,7 @@ namespace Oxide.Plugins
 		{
 			lang.RegisterMessages(new Dictionary<string, string>
 			{
-				["message"] = "That crop is not yours! Do not steal other players crops!",
+				["message"] = "<color={0}>This crop is not yours! Do not steal from other players!</color>",
 			}, this);
 		}
 
@@ -31,6 +31,7 @@ namespace Oxide.Plugins
 		{
 			LogWarning("Creating a new configuration file");
 			Config["ToolCupboardArea"] = true;
+			Config["MessageColor"] = "#ff0000";
 		}
 		#endregion
 
@@ -40,7 +41,7 @@ namespace Oxide.Plugins
 			return CropsProtected(player, growable);
 		}
 
-		private object OnGrowableGather(GrowableEntity growable, Item item, BasePlayer player)
+		private object OnGrowableGather(GrowableEntity growable, BasePlayer player)
 		{
 			return CropsProtected(player, growable);
 		}
@@ -66,6 +67,7 @@ namespace Oxide.Plugins
 			else if (growable.OwnerID != player.userID)
 			{
 				WarnPlayer(player);
+				return true;
 			}
 
 			return null;
@@ -75,7 +77,7 @@ namespace Oxide.Plugins
 		{
 			if (player.IPlayer.HasPermission(messagebypass) == false)
 			{
-				player.IPlayer.Message(lang.GetMessage("message", this, player.IPlayer.Id));
+				player.IPlayer.Message(string.Format(lang.GetMessage("message", this, player.IPlayer.Id), Config["MessageColor"]));
 			}
 		}
 		#endregion
